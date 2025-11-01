@@ -2,33 +2,56 @@ name: Frontend CI
 
 on:
   push:
-    paths: ['shady-rest-ui/**', '.github/workflows/frontend-ci.yml']
+    paths:
+      - "shady-rest-ui/**"
+      - ".github/workflows/frontend-ci.yml"
   pull_request:
-    paths: ['shady-rest-ui/**']
+    paths:
+      - "shady-rest-ui/**"
 
 jobs:
-  build-test:
+  build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    env:
+      CI: "true"
+      NG_CLI_ANALYTICS: "false"
+      NODE_OPTIONS: "--max-old-space-size=4096"
 
-      - name: Set up Node
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node from .nvmrc
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
-          cache-dependency-path: shady-rest-ui/package-lock.json
+          node-version-file: ".nvmrc"
+          cache: "npm"
+          cache-dependency-path: "shady-rest-ui/package-lock.json"
 
-      - name: Install
+      - name: Show versions (debug)
+        run: |
+          node -v
+          npm -v
+
+      - name: Install dependencies
         working-directory: shady-rest-ui
         run: npm ci
 
-      - name: Test (if tests exist)
+      # If you don't have tests yet, keep this as a no-op (won't fail CI).
+      - name: Unit tests (optional)
         working-directory: shady-rest-ui
-        run: npx ng test --watch=false --browsers=ChromeHeadless || echo "tests skipped"
+        run: |
+          npx ng test --watch=false --browsers=ChromeHeadless || echo "tests skipped"
 
-      - name: Build
+      - name: Build (production)
         working-directory: shady-rest-ui
         run: npx ng build --configuration production
 
-
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: shady-rest-ui/dist/shady-rest-ui/browser
+          if-no-files-found: error
