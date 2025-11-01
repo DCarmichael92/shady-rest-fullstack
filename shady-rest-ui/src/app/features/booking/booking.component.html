@@ -1,0 +1,54 @@
+<div style="max-width:720px;margin:auto;padding:1rem;">
+  <h1>Shady Rest Reservations</h1>
+
+  <form [formGroup]="form" (ngSubmit)="onQuote()">
+    <label>Room</label>
+    <select class="field" formControlName="roomType">
+      <option value="" disabled>Select a room</option>
+      <option *ngFor="let r of rooms" [value]="r.code">
+        {{ r.description }} — Base {{ r.baseRate | currency:'USD' }}
+      </option>
+    </select>
+
+    <label>Check-in date</label>
+    <input class="field" type="date" formControlName="checkInDate"/>
+
+    <label>Nights</label>
+    <input class="field" type="number" min="1" max="30" formControlName="nights"/>
+
+    <label>
+      <input type="checkbox" formControlName="loyaltyMember"/>
+      Loyalty member
+    </label>
+
+    <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+      <button type="submit" [disabled]="form.invalid">Get quote</button>
+      <button type="button" (click)="onBook()" [disabled]="!quote() || confirming()">Book now</button>
+    </div>
+  </form>
+
+  <section *ngIf="quote()" style="margin-top:1.5rem;">
+    <h2>Quote</h2>
+    <table border="1" cellpadding="6">
+      <thead>
+        <tr><th>Date</th><th>Nightly</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let line of quote()!.lines">
+          <td>{{ line.date }}</td>
+          <!-- No TS casts in templates; currency can format numeric strings -->
+          <td>{{ line.nightly | currency:'USD' }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr><th>Subtotal</th><th>{{ quote()!.subtotal | currency:'USD' }}</th></tr>
+        <tr><th>Tax</th><th>{{ quote()!.tax | currency:'USD' }}</th></tr>
+        <tr><th>Total</th><th>{{ quote()!.total | currency:'USD' }}</th></tr>
+      </tfoot>
+    </table>
+  </section>
+
+  <p *ngIf="confirmation()" style="margin-top:1rem;">
+    ✅ Booking confirmed: <strong>{{ confirmation() }}</strong>
+  </p>
+</div>
