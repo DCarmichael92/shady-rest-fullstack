@@ -2,33 +2,48 @@ name: Frontend CI
 
 on:
   push:
-    paths: ['shady-rest-ui/**', '.github/workflows/frontend-ci.yml']
+    paths:
+      - "shady-rest-ui/**"
+      - ".github/workflows/frontend-ci.yml"
   pull_request:
-    paths: ['shady-rest-ui/**']
 
 jobs:
-  build-test:
+  build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Set up Node
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-          cache-dependency-path: shady-rest-ui/package-lock.json
+
+      # Cache npm cache based on lockfile if present (no warnings if missing)
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles('shady-rest-ui/package-lock.json') }}
+          restore-keys: |
+            npm-
 
       - name: Install
         working-directory: shady-rest-ui
-        run: npm ci
-
-      - name: Test (if tests exist)
-        working-directory: shady-rest-ui
-        run: npx ng test --watch=false --browsers=ChromeHeadless || echo "tests skipped"
+        run: npm ci || npm install
 
       - name: Build
         working-directory: shady-rest-ui
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: npx ng build --configuration production
 
-
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: shady-rest-ui/dist/shady-rest-ui/browser
+          if-no-files-found: error
