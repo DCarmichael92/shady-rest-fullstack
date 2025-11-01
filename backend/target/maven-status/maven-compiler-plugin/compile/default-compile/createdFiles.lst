@@ -1,0 +1,8 @@
+com/devincarmichael/shadyrest/QuoteRequest.class
+com/devincarmichael/shadyrest/QuoteResponse.class
+com/devincarmichael/shadyrest/RoomType.class
+com/devincarmichael/shadyrest/QuoteLine.class
+com/devincarmichael/shadyrest/Room.class
+com/devincarmichael/shadyrest/BackendApplication.class
+com/devincarmichael/shadyrest/BookingController.class
+com/devincarmichael/shadyrest/PricingEngine.class

@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: shady-rest
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5432/shadyrest
+    username: shady
+    password: shady
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate.format_sql: true
+      hibernate.jdbc.time_zone: UTC
+  sql:
+    init:
+      mode: never
+server:
+  port: 8080

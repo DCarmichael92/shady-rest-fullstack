@@ -1,0 +1,47 @@
+name: Backend CI
+
+on:
+  push:
+    paths: ['backend/**', '.github/workflows/backend-ci.yml']
+  pull_request:
+    paths: ['backend/**']
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: shady
+          POSTGRES_PASSWORD: shady
+          POSTGRES_DB: shadyrest
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U shady"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: maven
+
+      - name: Build & Test
+        working-directory: backend
+        env:
+          SPRING_PROFILES_ACTIVE: dev
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/shadyrest
+          SPRING_DATASOURCE_USERNAME: shady
+          SPRING_DATASOURCE_PASSWORD: shady
+        run: mvn -B clean verify
+
+
