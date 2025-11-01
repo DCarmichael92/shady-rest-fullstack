@@ -168,8 +168,10 @@ This project was built to demonstrate:
 **Devin Carmichael**  
 
 Cloud Software Engineer
+
 WGU Software Engineering Student (June 2026)
-TS//SCI FSP • 3x AWS Certified • DoD Experience
+
+3x AWS Certified • DoD Experience
 
 ## ⭐ Like this repo?
 
