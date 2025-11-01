@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Backend build (JAR)
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Build backend
+        working-directory: backend
+        run: mvn -q -DskipTests clean package
+      - name: Collect backend artifact
+        run: |
+          mkdir -p out
+          cp backend/target/*.jar out/shady-rest-backend.jar
+
+      # Frontend build (Angular dist)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: shady-rest-ui/package-lock.json
+      - name: Build frontend
+        working-directory: shady-rest-ui
+        run: |
+          npm ci
+          npx ng build --configuration production
+          (cd dist/shady-rest-ui && zip -r ../../out/shady-rest-ui-dist.zip browser)
+
+      # Create GH Release + upload artifacts
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            out/shady-rest-backend.jar
+            out/shady-rest-ui-dist.zip
